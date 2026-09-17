@@ -27,7 +27,7 @@ async def agent(request:agent_request):
     }
     try:
         codebase=repo_pull(request.github_repo)
-        result=rag_agent.invoke({'codebase':codebase,'oal':request.goal,'repo_url':request.github_repo},config=config)
+        result=rag_agent.invoke({'codebase':codebase,'goal':request.goal,'repo_url':request.github_repo},config=config)
     except Exception:
         logging.exception(f"error happend for {request.id}")
         
