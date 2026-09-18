@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI,HTTPException,status
 from pydantic import BaseModel,Field
 from typing import Literal
 from backend.Agent.graph import rag_agent
@@ -6,8 +6,6 @@ from backend.project_pull.pull import repo_pull
 import os
 import logging
 from config import settings
-logging.basicConfig(level=logging.INFO)
-logger=logging.getLogger(__name__)
 os.environ['LANGSMITH_API_KEY']=settings.LANGSMITH_API_KEY
 os.environ['LANGSMITH_ENDPOINT']=settings.LANGSMITH_ENDPOINT
 os.environ['LANGSMITH_PROJECT']=settings.LANGSMITH_PROJECT
@@ -28,9 +26,10 @@ async def agent(request:agent_request):
     try:
         codebase=repo_pull(request.github_repo)
         result=rag_agent.invoke({'codebase':codebase,'goal':request.goal,'repo_url':request.github_repo},config=config)
-    except Exception:
+
+    except Exception as e:
         logging.exception(f"error happend for {request.id}")
-        
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
     return result['final_post']
         
         
