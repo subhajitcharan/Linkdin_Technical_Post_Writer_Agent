@@ -1,4 +1,5 @@
 from fastapi import FastAPI,HTTPException,status
+from fastapi.concurrency import run_in_threadpool
 from pydantic import BaseModel,Field
 from typing import Literal
 from backend.Agent.graph import rag_agent
@@ -24,8 +25,8 @@ async def agent(request:agent_request):
     }
     }
     try:
-        codebase=repo_pull(request.github_repo)
-        result=rag_agent.invoke({'codebase':codebase,'goal':request.goal,'repo_url':request.github_repo},config=config)
+        codebase=await run_in_threadpool(repo_pull,request.github_repo)
+        result=await rag_agent.ainvoke({'codebase':codebase,'goal':request.goal,'repo_url':request.github_repo},config=config)
 
     except Exception as e:
         logging.exception(f"error happend for {request.id}")
